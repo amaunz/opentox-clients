@@ -1,5 +1,13 @@
+=begin
+  * Name: params.rb
+  * Description: A client application for grid search on parameters of lazar or other algorithms
+  * Author: Andreas Maunz
+  * Date: 09/2012
+  * License: BSD
+=end
+
 class AlgorithmParams
-  attr_accessor :parVals, :multiPar
+  attr_accessor :parVals, :multiPar, :parNames
 
   def initialize(algPars, multiPar = ["min_sim", "min_train_performance"])
     @parVals={}
