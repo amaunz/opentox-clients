@@ -61,7 +61,7 @@ while algParArr.size>0 || tasks.size>0
       payload[:algorithm_uri] = options["algorithm_uri"]
       payload[:dataset_uri] = options["dataset_uri"]
       payload[:prediction_feature] = options["prediction_feature"]
-      payload[:alg_params] = apsString
+      payload[:algorithm_params] = apsString
       tasks << OpenTox::RestClientWrapper.post(options["validation_uri"],payload,{},nil,false).to_s.chomp
       puts "Starting task with alg params '#{payload.inspect}'"
       gridParVals << aps.multiPar.collect { |name| curAlgPars[name].to_s }
