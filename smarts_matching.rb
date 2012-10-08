@@ -9,9 +9,9 @@
 require 'rubygems'
 require 'opentox-ruby'
 require 'optparse'
-require '/home/ot1/opentox-ruby/www/opentox/algorithm/last-utils/lu.rb'
+require "#{ENV['HOME']}/opentox-ruby/www/opentox/algorithm/last-utils/lu.rb"
 
-$mandatory_arguments = [ ["d", "dataset_uri"], ["f", "feature_dataset_uris"] ]
+$mandatory_arguments = [ ["d", "dataset_uri"], ["f", "feature_dataset_uris"], ["o", "output_file"] ]
 $optional_arguments = [ ]
 $arguments = $mandatory_arguments + $optional_arguments
 
@@ -42,6 +42,7 @@ ds=OpenTox::Dataset.find(options[:dataset_uri])
 compounds=ds.compounds.collect { |cmpd|
   OpenTox::Compound.new(cmpd).to_smiles
 }
+lu=LU.new
 
 csv_out = [["ID"]]
 csv_out += (1..compounds.size).to_a.collect { |idx| [ idx ] }
@@ -50,6 +51,8 @@ fds_uris=options[:feature_dataset_uris].split(';')
 fds_uris.each { |fds_uri|
   puts fds_uri
   smartss = []
+
+  fds=OpenTox::Dataset.find(fds_uri)
   fds.features.keys.collect { |f_uri| 
       feat=OpenTox::Feature.find(f_uri)
       smarts = feat.metadata[OT.smarts]
@@ -59,7 +62,6 @@ fds_uris.each { |fds_uri|
       smartss << smarts
   }
 
-  fds=OpenTox::Dataset.find(fds_uri)
   compounds.each_with_index { |smi,idx|
     smartss.each { |smarts| 
       hits=lu.match(smi,smarts,false,true) 
@@ -69,4 +71,9 @@ fds_uris.each { |fds_uri|
 }
 puts
 
-puts csv_out.collect { |row| row.join(',') }.join("\n")
+begin
+  outfile=File.new(options[:output_file], "w")
+  outfile.puts csv_out.collect { |row| row.join(',') }.join("\n")
+rescue => e
+  e.message
+end
