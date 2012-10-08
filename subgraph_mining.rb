@@ -1,6 +1,6 @@
 =begin
   * Name: subgraph_mining.rb
-  * Description: A client application for calculating subgraph descriptors. Assumes cmpdfix.
+  * Description: A client application for calculating subgraph descriptors.
   * Author: Andreas Maunz
   * Date: 09/2012
   * License: BSD
@@ -11,7 +11,7 @@ require 'opentox-ruby'
 require 'optparse'
 
 $mandatory_arguments = [ ["a", "algorithm_uri" ], ["d", "dataset_uri"] ]
-$optional_arguments = [ ["f", "min_frequency"] ]
+$optional_arguments = [ ["f", "min_frequency"], ["i","include"] ]
 $arguments = $mandatory_arguments + $optional_arguments
 
 options = {}
@@ -35,6 +35,10 @@ $mandatory_arguments.each { |arg|
 $optional_arguments.each { |s,l| options.delete(l) if options[l]=="" }
 options = Hash[options.map{ |k, v| [k.to_sym, v] }]
 options[:complete_entries] = "true"
+if options[:include]
+  included = options[:include].split(',')
+  puts "included features: #{included.join(', ')}"
+end
 
 ds=OpenTox::Dataset.find(options[:dataset_uri])
 idx=0
@@ -44,14 +48,16 @@ options.delete(:algorithm_uri)
 ds.features.each { |f_uri,v|
   options[:prediction_feature] = f_uri
   idx+=1
-  puts "Feature '#{v[DC.title]}' (#{idx}/#{ds.features.size})"
-  puts options.to_yaml
-  begin
-    res_url = OpenTox::RestClientWrapper.post(algorithm_uri, options)
-    puts res_url
+  if included.include? v[DC.title]
+    puts "Feature '#{v[DC.title]}' (#{idx}/#{ds.features.size})"
+    puts options.to_yaml
+    begin
+      res_url = OpenTox::RestClientWrapper.post(algorithm_uri, options)
+      puts res_url
+    rescue => e
+      puts "#{e.class}: #{e.message}"
+      puts "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
+    end
     puts
-  rescue => e
-    puts "#{e.class}: #{e.message}"
-    puts "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
   end
 }
