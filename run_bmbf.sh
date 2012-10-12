@@ -20,20 +20,26 @@ function get_result {
 
 function run_mining {
   alg=$1
+  destdir="$2-`date +%Y-%m-%d-%H-%M-%S`"; mkdir "$destdir" 2>/dev/null
   for idx in `seq 2 5`; do
     ds='$'"disc$idx"
     eval ds=$ds 
     res_ds_list=""
     ruby subgraph_mining.rb -a http://localhost:8080/algorithm/fminer/$alg -d "$ds" -i "$assays" -f 100pm > dslist
     exec 0<dslist
+    assay_idx=1
     while read res_ds; do 
-      res_nr=`curl -H 'accept:text/csv' $res_ds 2>/dev/null | head -1 | sed 's/[^,]//g' | wc -c`
-      echo "$res_ds: $res_nr"
+      assay=`echo $assays | cut -d',' -f$assay_idx`
+      csv_outfile="$destdir/${alg}_${assay}_${idx}.csv"
+      curl -H 'accept:text/csv' "$res_ds" 2>/dev/null > "$csv_outfile"
+      res_nr=`cat "$csv_outfile" | head -1 | sed 's/[^,]//g' | wc -c`
+      echo "$assay, $res_ds, $res_nr"
       if [ -z "$res_ds_list" ]; then
         res_ds_list="$res_ds"
       else
         res_ds_list="$res_ds_list;$res_ds"
       fi
+      assay_idx=$((assay_idx+1))
     done
     echo
     run_matching
@@ -42,7 +48,7 @@ function run_mining {
 }
 
 function run_matching {
-    ruby smarts_matching.rb -d "$ds" -f "$res_ds_list" -o "${alg}_${idx}_match.csv"
+    ruby smarts_matching.rb -d "$ds" -f "$res_ds_list" -o "$destdir/${alg}_${idx}_match.csv"
 }
 
 
@@ -73,5 +79,5 @@ echo
 assays="liver,clinical_chemistry,body_weight,kidney,RBC,CNS,WBC,spleen,urine_analysis,male_reproductive_organ,thymus,heart,brain"
 #assays="adrenal_gland"
 
-run_mining bbrc
-run_mining last
+run_mining bbrc csv_out
+run_mining last csv_out

@@ -52,7 +52,7 @@ options.delete(:algorithm_uri)
 
 
 included.each { |title|
-  features.each { |f_uri,v|
+  ds.features.each { |f_uri,v|
     if title == v[DC.title]
       puts "Feature '#{v[DC.title]}'" if verbose
       options[:prediction_feature] = f_uri
