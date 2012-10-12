@@ -20,7 +20,6 @@ function get_result {
 
 function run_mining {
   alg=$1
-  destdir="$2-`date +%Y-%m-%d-%H-%M-%S`"; mkdir "$destdir" 2>/dev/null
   for idx in `seq 2 5`; do
     ds='$'"disc$idx"
     eval ds=$ds 
@@ -51,6 +50,12 @@ function run_matching {
     ruby smarts_matching.rb -d "$ds" -f "$res_ds_list" -o "$destdir/${alg}_${idx}_match.csv"
 }
 
+function run_pc {
+    csv_outfile="$destdir/pc.csv"
+    res_ds=`ruby pc_descriptors.rb -d "$disc2" -a "$lh:8080/algorithm/pc/AllDescriptors"`
+    curl -H 'accept:text/csv' "$res_ds" 2>/dev/null > "$csv_outfile"
+}
+
 
 #  first insert SMILES structure information for Neustoff
 # upload
@@ -79,5 +84,7 @@ echo
 assays="liver,clinical_chemistry,body_weight,kidney,RBC,CNS,WBC,spleen,urine_analysis,male_reproductive_organ,thymus,heart,brain"
 #assays="adrenal_gland"
 
-run_mining bbrc csv_out
-run_mining last csv_out
+destdir="csv_out-`date +%Y-%m-%d-%H-%M-%S`"; mkdir "$destdir" 2>/dev/null
+run_pc
+run_mining bbrc
+run_mining last

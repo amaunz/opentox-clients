@@ -11,7 +11,7 @@ require 'opentox-ruby'
 require 'optparse'
 
 $mandatory_arguments = [ ["a", "algorithm_uri" ], ["d", "dataset_uri"] ]
-$optional_arguments = [ ["p", "pc_type"], ["l", "lib"] ]
+$optional_arguments = [ ["p", "pc_type"], ["l", "lib"], ["v", "verbose"] ]
 $arguments = $mandatory_arguments + $optional_arguments
 
 options = {}
@@ -32,10 +32,15 @@ optparse.parse! # What's left in ARGV is the list of non-opt args.
 $mandatory_arguments.each { |arg|
   raise(OptionParser::MissingArgument, "Missing argument '#{arg[1]}'") if options[arg[1]].size == 0
 }
-puts options.to_yaml
+
 $optional_arguments.each { |s,l| options.delete(l) if options[l]=="" }
 options = Hash[options.map{ |k, v| [k.to_sym, v] }]
-puts options.to_yaml
+verbose=false
+if options[:verbose] == "true"
+  verbose=true
+end
+
+puts options.to_yaml if verbose
 algorithm_uri = options[:algorithm_uri]
 options.delete(:algorithm_uri)
 
