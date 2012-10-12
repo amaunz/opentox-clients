@@ -51,7 +51,21 @@ echo "$disc4"
 echo "$disc5" 
 
 # select assays with 10% non-missing values
-assays="body_weight,liver,kidney,clinical_chemistry,RBC,CNS,male_reproductive_organ,WBC,spleen,urine_analysis,thymus,brain,heart"
+# liver , 0.611 
+# clinical.chemistry , 0.567
+# body.weight , 0.532
+# kidney , 0.442
+# RBC , 0.351
+# CNS , 0.296
+# WBC , 0.204
+# spleen , 0.201
+# urine.analysis , 0.180
+# male.reproductive.organ , 0.165
+# adrenal.gland , 0.135
+# thymus , 0.131
+# heart , 0.102
+# brain , 0.082
+assays="liver,clinical_chemistry,body_weight,kidney,RBC,CNS,WBC,spleen,urine_analysis,male_reproductive_organ,adrenal_gland,thymus,heart,brain"
 
 run_sgm bbrc
 run_sgm last
