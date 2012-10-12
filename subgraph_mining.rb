@@ -41,6 +41,7 @@ end
 options.delete(:verbose)
 
 options[:complete_entries] = "true"
+options[:nr_hits]="true"
 if options[:include]
   included = options[:include].split(',')
   puts "included features: #{included.join(', ')}" if verbose
