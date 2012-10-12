@@ -49,7 +49,6 @@ csv_out += (1..compounds.size).to_a.collect { |idx| [ idx ] }
 
 fds_uris=options[:feature_dataset_uris].split(';')
 fds_uris.each { |fds_uri|
-  puts fds_uri
   smartss = []
 
   fds=OpenTox::Dataset.find(fds_uri)
@@ -69,11 +68,11 @@ fds_uris.each { |fds_uri|
     }
   }
 }
-puts
 
 begin
   outfile=File.new(options[:output_file], "w")
   outfile.puts csv_out.collect { |row| row.join(',') }.join("\n")
+  puts "Matching stored in '#{outfile.path}'"
 rescue => e
   e.message
 end
