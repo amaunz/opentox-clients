@@ -47,23 +47,23 @@ if options[:include]
 end
 
 ds=OpenTox::Dataset.find(options[:dataset_uri])
-idx=0
 algorithm_uri = options[:algorithm_uri]
 options.delete(:algorithm_uri)
 
-features=ds.features.collect.to_a.sort
-features.each { |f_uri,v|
-  options[:prediction_feature] = f_uri
-  idx+=1
-  if included.include? v[DC.title]
-    puts "Feature '#{v[DC.title]}' (#{idx}/#{ds.features.size})" if verbose
-    puts options.to_yaml if verbose
-    begin
-      res_url = OpenTox::RestClientWrapper.post(algorithm_uri, options)
-      puts res_url
-    rescue => e
-      puts "#{e.class}: #{e.message}"
-      puts "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
+
+included.each { |title|
+  features.each { |f_uri,v|
+    if title == v[DC.title]
+      puts "Feature '#{v[DC.title]}'" if verbose
+      options[:prediction_feature] = f_uri
+      puts options.to_yaml if verbose
+      begin
+        res_url = OpenTox::RestClientWrapper.post(algorithm_uri, options)
+        puts res_url
+      rescue => e
+        puts "#{e.class}: #{e.message}"
+        puts "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
+      end
     end
-  end
+  }
 }
