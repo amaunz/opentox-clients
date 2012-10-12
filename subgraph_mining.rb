@@ -11,7 +11,7 @@ require 'opentox-ruby'
 require 'optparse'
 
 $mandatory_arguments = [ ["a", "algorithm_uri" ], ["d", "dataset_uri"] ]
-$optional_arguments = [ ["f", "min_frequency"], ["i","include"] ]
+$optional_arguments = [ ["f", "min_frequency"], ["i","include"], ["v", "verbose"] ]
 $arguments = $mandatory_arguments + $optional_arguments
 
 options = {}
@@ -34,10 +34,16 @@ $mandatory_arguments.each { |arg|
 }
 $optional_arguments.each { |s,l| options.delete(l) if options[l]=="" }
 options = Hash[options.map{ |k, v| [k.to_sym, v] }]
+verbose=false
+if options[:verbose] == "true"
+  verbose=true
+end
+options.delete(:verbose)
+
 options[:complete_entries] = "true"
 if options[:include]
   included = options[:include].split(',')
-  puts "included features: #{included.join(', ')}"
+  puts "included features: #{included.join(', ')}" if verbose
 end
 
 ds=OpenTox::Dataset.find(options[:dataset_uri])
@@ -45,12 +51,13 @@ idx=0
 algorithm_uri = options[:algorithm_uri]
 options.delete(:algorithm_uri)
 
-ds.features.each { |f_uri,v|
+features=ds.features.collect.to_a.sort
+features.each { |f_uri,v|
   options[:prediction_feature] = f_uri
   idx+=1
   if included.include? v[DC.title]
-    puts "Feature '#{v[DC.title]}' (#{idx}/#{ds.features.size})"
-    puts options.to_yaml
+    puts "Feature '#{v[DC.title]}' (#{idx}/#{ds.features.size})" if verbose
+    puts options.to_yaml if verbose
     begin
       res_url = OpenTox::RestClientWrapper.post(algorithm_uri, options)
       puts res_url
@@ -58,6 +65,5 @@ ds.features.each { |f_uri,v|
       puts "#{e.class}: #{e.message}"
       puts "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
     end
-    puts
   end
 }
