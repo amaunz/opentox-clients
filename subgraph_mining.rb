@@ -62,8 +62,9 @@ included.each { |title|
         res_url = OpenTox::RestClientWrapper.post(algorithm_uri, options)
         puts res_url
       rescue => e
-        puts "#{e.class}: #{e.message}"
-        puts "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
+        puts "" # Do not emit error message to allow machine processing
+        #puts "#{e.class}: #{e.message}"
+        #puts "Backtrace:\n\t#{e.backtrace.join("\n\t")}"
       end
     end
   }

@@ -20,17 +20,22 @@ function get_result {
 
 function run_mining {
   alg=$1
+  minfreq=$2
   for idx in `seq 2 5`; do
     ds='$'"disc$idx"
     eval ds=$ds 
     res_ds_list=""
-    ruby subgraph_mining.rb -a http://localhost:8080/algorithm/fminer/$alg -d "$ds" -i "$assays" -f 100pm > dslist
+    ruby subgraph_mining.rb -a http://localhost:8080/algorithm/fminer/$alg -d "$ds" -i "$assays" -f "$minfreq" > dslist
     exec 0<dslist
     assay_idx=1
     while read res_ds; do 
       assay=`echo $assays | cut -d',' -f$assay_idx`
       csv_outfile="$destdir/${alg}_${assay}_${idx}.csv"
-      curl -H 'accept:text/csv' "$res_ds" 2>/dev/null > "$csv_outfile"
+      if [ -n "$res_ds" ]; then
+        curl -H 'accept:text/csv' "$res_ds" 2>/dev/null > "$csv_outfile"
+      else
+        touch "$csv_outfile"
+      fi
       res_nr=`cat "$csv_outfile" | head -1 | sed 's/[^,]//g' | wc -c`
       echo "$assay, $res_ds, $res_nr"
       if [ -z "$res_ds_list" ]; then
@@ -66,25 +71,15 @@ done
 echo "2: $disc2, 3: $disc3, 4: $disc4, 5: $disc5" 
 echo
 
-# select assays with 10% non-missing values
-# liver , 0.611 
-# clinical.chemistry , 0.567
-# body.weight , 0.532
-# kidney , 0.442
-# RBC , 0.351
-# CNS , 0.296
-# WBC , 0.204
-# spleen , 0.201
-# urine.analysis , 0.180
-# male.reproductive.organ , 0.165
-# adrenal.gland , 0.135
-# thymus , 0.131
-# heart , 0.102
-# brain , 0.082
-assays="liver,clinical_chemistry,body_weight,kidney,RBC,CNS,WBC,spleen,urine_analysis,male_reproductive_organ,thymus,heart,brain"
-#assays="adrenal_gland"
 
+#destdir="csv_out-`date +%Y-%m-%d-%H-%M-%S`"; mkdir "$destdir" 2>/dev/null
+#run_pc
+
+# select assays with 20% non-missing values
+
+#removed=a_2u_nephropathy,male_accessory_gland,bone,gall_bladder_bile_duct,urine_analysis,pituitary_gland__hypohysis_,pancreas
+
+assays="adrenal_gland,bladder,body_weight,bone_marrow,brain,clinical_chemistry,CNS,female_reproductive_organ,haematopoiesis,heart,intestine,kidney,liver,lymph_node,male_reproductive_organ,RBC,spleen,thymus,thyroid_gland,WBC"
 destdir="csv_out-`date +%Y-%m-%d-%H-%M-%S`"; mkdir "$destdir" 2>/dev/null
-run_pc
-run_mining bbrc
-run_mining last
+run_mining bbrc 70pm
+run_mining last 70pm
